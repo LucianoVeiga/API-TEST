@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -184,9 +185,13 @@ func main() {
 	router.POST("/teams", addTeam)
 	router.GET("/logo/:teamId", getTeamLogo)
 
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
+	clientOptions := options.Client().ApplyURI(os.Getenv("DATABASE_URL"))
 	cl, err := mongo.Connect(context.Background(), clientOptions)
 	client = cl
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	err = client.Ping(context.Background(), nil)
 
