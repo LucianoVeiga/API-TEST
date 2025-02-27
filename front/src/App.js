@@ -4,7 +4,7 @@ import Topnav from "./Components/Topnav";
 import AddTeamForm from "./Components/AddTeamForm";
 import Team from "./Components/Team";
 
-export const URL = "http://localhost:8080";
+export const URL = process.env.REACT_APP_API_URL;
 
 function App() {
   const [teams, setTeams] = useState([]);
@@ -28,7 +28,7 @@ function App() {
       .then((response) => response.json())
       .then((response) => {
         console.log("Received " + JSON.stringify(response));
-        return response;
+        return response ?? [];
       })
       .catch((error) => {
         console.log("Error in request");
