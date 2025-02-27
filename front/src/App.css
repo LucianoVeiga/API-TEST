@@ -1,104 +1,76 @@
-.App {
-  text-align: center;
-  text-shadow: 2px 2px 4px #000000;
-  width: 100%;
-  text-align: left;
+body {
+	background-color: #272727;
+	color: rgb(130, 130, 130);
 }
 
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  padding: 50px;
-  flex-direction: column;
-  text-align: left;
-  align-items: flex-start;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+	min-height: 100vh;
+	padding: 50px;
+	text-align: left;
 }
 
 .topnav {
-  display: block;
-  overflow: hidden;
-  position: fixed;
-  flex-direction: row;
-  color: black;
-  text-align: center;
-  width: 100%;
-  background-color: #55b4ce;
-}
-
-.input {
-  background-color: white;
-  padding: 10px;
-  border-radius: 10px;
-  margin: 10px;
-  border: none;
-  outline: none;
-  transition: background-color 0.5s;
-}
-
-.input:hover {
-  background-color: rgb(226, 223, 223);
-}
-
-.input:focus {
-  background-color: rgb(226, 223, 223);
+	overflow: hidden;
+	width: 100%;
+	position: fixed;
+	display: flex;
+	justify-content: center;
+	flex-direction: row;
+	text-align: center;
+	background-color: #272727;
 }
 
 .button {
-  background-color: white;
-  padding: 10px;
-  border-radius: 10px;
-  margin: 10px;
-  border: none;
-  outline: none;
-  transition: background-color 0.5s;
+	background-color: #303030;
+	color: rgb(130, 130, 130);
+	padding: 10px;
+	border-radius: 10px;
+	border: none;
+	margin: 20px;
+	outline: none;
+}
+
+.input {
+	background-color: #272727;
+	color: rgb(130, 130, 130);
+	display: flex;
+	align-items: center;
+	padding: 10px;
+	border-radius: 10px;
+	min-width: 150px;
+	border: none;
+	margin: 10px;
+	outline: none;
+}
+
+.input:hover {
+	transition: background-color 0.5s;
+	background-color: #353535;
+}
+
+.input:focus {
+	background-color: #353535;
 }
 
 .button:hover {
-  background-color: rgb(226, 223, 223);
-  cursor: pointer;
-}
-
-.checkmark {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 25px;
-  width: 25px;
-  background-color: #eee;
-  border-radius: 50%;
-}
-
-/* On mouse-over, add a grey background color */
-.container:hover input ~ .checkmark {
-  background-color: #ccc;
-}
-
-/* When the checkbox is checked, add a blue background */
-.container input:checked ~ .checkmark {
-  background-color: #2196F3;
-}
-
-/* Create the checkmark/indicator (hidden when not checked) */
-.checkmark:after {
-  content: "";
-  position: absolute;
-  display: none;
+	transition: background-color 0.5s;
+	background-color: #5c5c5c;
+	cursor: pointer;
 }
 
 .box {
-  background-color: #55b4ce;
-  border-radius: 10px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  text-align: left;
-  align-items: flex-start;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-  margin: 20px;
-  width: 100%;
+	display: flex;
+	width: 100%;
+	min-height: 300px;
+	background-color: #1d1d1d;
+	border-radius: 10px;
+	margin: 20px;
+	padding: 20px;
+}
+
+.logo {
+	display: flex;
+	flex-direction: column;
+	word-break: break-word;
+	width: 300px;
 }

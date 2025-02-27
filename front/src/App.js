@@ -1,82 +1,73 @@
-import './App.css';
-import React, { useState, useEffect, useRef } from 'react';
+import "./App.css";
+import React, { useState, useEffect } from "react";
+import Topnav from "./Components/Topnav";
+import AddTeamForm from "./Components/AddTeamForm";
+import Team from "./Components/Team";
 
-const URL = "http://localhost:8080";
-
-function getTeamsFromAPI() {
-    return fetch(URL + '/Teams', { method: 'GET' })
-    .then(response => response.json())
-    .then(response => {
-      console.log("Received " + JSON.stringify(response));
-      return response;
-    })
-    .catch(error => {
-      console.log('Error in request');
-      console.log(error);
-      return [];
-    })
-  }
+export const URL = "http://localhost:8080";
 
 function App() {
-  const teamsFetched = useRef(false);
   const [teams, setTeams] = useState([]);
+  const [id, setId] = useState("");
   const [name, setName] = useState("");
   const [color, setColor] = useState("");
   const [number, setNumber] = useState(0);
   const [classified, setClassified] = useState(false);
-  const [id, setId] = useState("");
-  const [currentId, setCurrentId] = useState("");
-  
+  const [logo, setLogo] = useState(null);
+  const [currentSearch, setCurrentSearch] = useState("");
+
   const [addTeamVisibility, setAddTeamVisibility] = useState(false);
   const [openedTeam, setOpenedTeam] = useState(-1);
-  
+
   useEffect(() => {
-    if (!teamsFetched.current) {
-      teamsFetched.current = true;
-      getTeamsFromAPI().then(setTeams);
-    }
-  }, [])
-  
-  let getTeamFromAPI = async () => {
-    return fetch(URL + '/Teams/' + id, { method: 'GET' })
-    .then(response => response.json())
-    .then(response => {
-      console.log("Received " + JSON.stringify(response));
-      return response;
-    })
-    .catch(error => {
-      console.log('Error in request');
-      console.log(error);
-      return [];
-    })
+    getTeamsFromAPI().then(setTeams);
+  }, []);
+
+  let getTeamsFromAPI = async () => {
+    return fetch(URL + "/teams", { method: "GET" })
+      .then((response) => response.json())
+      .then((response) => {
+        console.log("Received " + JSON.stringify(response));
+        return response;
+      })
+      .catch((error) => {
+        console.log("Error in request");
+        console.log(error);
+        return [];
+      });
   };
-  
+
   let postTeamToAPI = async (e) => {
-    let err = false;
+    e.preventDefault();
 
-    teams.map((team) => {
-      if(team.number === number) {
-        err = true;
-      }
-    });
+    if (teams.find((team) => team.id === id)) {
+      console.log("Another team already has that id assigned");
+      return;
+    }
 
-    if(err) {
-      e.preventDefault();
+    if (teams.find((team) => team.number === number)) {
       console.log("Another team already has that number assigned");
       return;
     }
 
     try {
-      let res = await fetch(URL + '/Teams', { method: "POST",
-        body: JSON.stringify({
-          name: name,
-          color: color,
-          number: number,
-          classified: classified,
-          id: id,
-        }),
+      const newTeam = {
+        name: name,
+        color: color,
+        number: number,
+        classified: classified,
+        id: id,
+      };
+
+      const formData = new FormData();
+      formData.append("logo", logo);
+      formData.append("team", JSON.stringify(newTeam));
+
+      let res = await fetch(URL + "/teams", {
+        method: "POST",
+        body: formData,
       });
-      
+
       if (res.status === 201) {
         setName("");
         setColor("");
@@ -84,26 +75,35 @@ function App() {
         setClassified(false);
         setId("");
         console.log("Team created successfully");
+        setTeams([newTeam, ...teams]);
       } else {
         console.log("Some error occured");
       }
     } catch (err) {
       console.log(err);
     }
+
+	e.target.reset();
   };
 
-  let patchTeamFromAPI = async (currentId, team) => {
+  let patchTeamFromAPI = async (newId, team, e) => {
+    e.preventDefault();
+
     try {
-      let res = await fetch(URL + '/Teams/' + team.id, { method: "PATCH",
-        body: JSON.stringify({
-          name: team.name,
-          color: team.color,
-          number: team.number,
-          classified: team.classified,
-          id: currentId,
-        }),
+      const patchedTeam = {
+        logo: team.logo,
+        name: team.name,
+        color: team.color,
+        number: team.number,
+        classified: team.classified,
+        id: newId,
+      };
+
+      let res = await fetch(URL + "/teams/" + team.id, {
+        method: "PATCH",
+        body: JSON.stringify(patchedTeam),
       });
-      
+
       if (res.status === 200) {
         setName("");
         setColor("");
@@ -111,6 +111,7 @@ function App() {
         setClassified(false);
         setId("");
         console.log("Team patched successfully");
+        setTeams(teams.map((t) => (t.id === team.id ? patchedTeam : t)));
       } else {
         console.log("Some error occured");
       }
@@ -119,18 +120,24 @@ function App() {
     }
   };
 
-  let deleteTeamFromAPI = async (team) => {
+  let deleteTeamFromAPI = async (team, e) => {
+    e.preventDefault();
+
     try {
-      let res = await fetch(URL + '/Teams/' + team.id, { method: "DELETE",
-        body: JSON.stringify({
-          name: team.name,
-          color: team.color,
-          number: team.number,
-          classified: team.classified,
-          id: team.id,
-        }),
+      const teamToDelete = {
+        logo: team.logo,
+        name: team.name,
+        color: team.color,
+        number: team.number,
+        classified: team.classified,
+        id: team.id,
+      };
+
+      let res = await fetch(URL + "/teams/" + team.id, {
+        method: "DELETE",
+        body: JSON.stringify(teamToDelete),
       });
-      
+
       if (res.status === 200) {
         setName("");
         setColor("");
@@ -138,7 +145,7 @@ function App() {
         setClassified(false);
         setId("");
         console.log("Team deleted successfully");
-        window.location.reload();
+        setTeams(teams.filter((t) => t.id !== teamToDelete.id));
       } else {
         console.log("Some error occured");
       }
@@ -146,54 +153,58 @@ function App() {
       console.log(err);
     }
   };
-  
+
   return (
-    <div className = "App">
-      <div className = "topnav">
-      <div>
-        <button className = "button" onClick = {() => setId("") }>Home</button>
-        <input className = "input" placeholder = "Search team..." id = "team"/>
-        <button className = "button" onClick = {() => { setId(document.getElementById("team").value) } }>🔎</button>
-      </div>
-      </div>
-      <header className = "App-header">
-        <h1>API TEST</h1>
-        <div className = "box">
-        <button className = "button" onClick = {() => { setAddTeamVisibility(!addTeamVisibility) }}>{ addTeamVisibility ? "x" : "Add team" }</button>
-        { addTeamVisibility && (
-          <form className = "box" style = {{ backgroundColor: '#303030' }} onSubmit = { postTeamToAPI }>
-            <input className = "input" placeholder = "Name" onChange = {(e) => setName(e.target.value) }/>
-            <input className = "input" placeholder = "Color" onChange = {(e) => setColor(e.target.value) }/>
-            <input className = "input" type = "number" placeholder = "Number" onChange = {(e) => setNumber(parseInt(e.target.value)) }/>
-            <div className = "input">
-              <input type = "checkbox" onChange = {() => { setClassified(!classified)}}/><small style = {{ textShadow:"none" ,fontSize: "15px", color: "#999999" }}>{ classified ? "Classified" : "Not classified"  }</small>
-            </div>
-            <input className = "input" placeholder = "Id" onChange = {(e) => setId(e.target.value) }/>
-            <button className = "button">Add</button>
-          </form>
-        ) }
-        </div>
-        { teams.map((team, i) =>
-           team.id === id || id === "" ?
-            <div className = "box" key = { i }>
-              <h1>{ team.name }</h1>
-              <div className = "App">
-                <label>&emsp;{ team.color }</label>
-                <label>&emsp;{ team.number }</label>
-                <label>&emsp;{ team.classified ? "Classified" : "Not classified" }</label>
-                <label>&emsp;{ team.id }</label>&emsp;
-                <button className = "button" onClick = {() => { setOpenedTeam(openedTeam === i ? -1 : i) }}>{ openedTeam === i ? 'x' : 'Change id' }</button>
-                { openedTeam === i && (
-                  <form className = "box" style = {{ width: "100%", justifyContent: "left", flexDirection: "row", backgroundColor: '#303030' }} onSubmit = {() => { setTeams([...teams]); patchTeamFromAPI(currentId, team) } }>
-                    <input className = "input" attribute = "button" placeholder = "New id" onChange = {(e) => setCurrentId(e.target.value)}/>
-                    <button className = "button">Submit</button>
-                  </form>    
-                ) }
-                <button className = "button" style = {{ backgroundColor: '#BD0505' }} onClick = {() => { deleteTeamFromAPI(team) }}>Delete</button>
-              </div>
-            </div>
-            : null
-        ) }
+    <div>
+      <Topnav setCurrentSearch={setCurrentSearch} />
+      <header className="App-header">
+        <h1>Tournament</h1>
+        <button
+          className="button"
+          onClick={() => {
+            setAddTeamVisibility(!addTeamVisibility);
+          }}
+        >
+          {addTeamVisibility ? "x" : "Add team"}
+        </button>
+        {addTeamVisibility && (
+          <AddTeamForm
+            {...{
+              classified,
+              setId,
+              setLogo,
+              postTeamToAPI,
+              setName,
+              setColor,
+              setNumber,
+              setClassified,
+            }}
+          />
+        )}
+        {teams
+          .filter((t) =>
+            currentSearch !== ""
+              ? t.id.toLowerCase().includes(currentSearch) ||
+                t.name.toLowerCase().includes(currentSearch) ||
+                t.color.toLowerCase().includes(currentSearch) ||
+                String(t.number).toLowerCase().includes(currentSearch)
+              : true
+          )
+          .map((team, i) => (
+            <Team
+              key={i}
+              {...{
+                i,
+                team,
+                setOpenedTeam,
+                openedTeam,
+                setId,
+                patchTeamFromAPI,
+                id,
+                deleteTeamFromAPI,
+              }}
+            />
+          ))}
       </header>
     </div>
   );
