@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -37,9 +38,11 @@ type Team struct {
 	Logo       primitive.Binary `json:"-"`
 }
 
+const databaseName = "tournament"
+
 func getTeams(ctx *gin.Context) {
 	var results []Team
-	coll := client.Database("Database").Collection("Teams")
+	coll := client.Database(databaseName).Collection("Teams")
 	cursor, err := coll.Find(ctx, bson.M{})
 
 	if err != nil {
@@ -58,7 +61,7 @@ func getTeams(ctx *gin.Context) {
 func getTeamLogo(ctx *gin.Context) {
 	teamId := ctx.Param("teamId")
 
-	coll := client.Database("Database").Collection("Teams")
+	coll := client.Database(databaseName).Collection("Teams")
 
 	result := coll.FindOne(ctx, bson.M{"id": teamId})
 	err := result.Err()
@@ -127,7 +130,7 @@ func addTeam(ctx *gin.Context) {
 
 func changeTeamId(ctx *gin.Context) {
 	var team Team
-	coll := client.Database("Database").Collection("Teams")
+	coll := client.Database(databaseName).Collection("Teams")
 
 	if err := ctx.BindJSON(&team); err != nil {
 		ctx.JSON(http.StatusInternalServerError, createResponse("error", err.Error()))
@@ -145,7 +148,7 @@ func changeTeamId(ctx *gin.Context) {
 
 func deleteTeam(ctx *gin.Context) {
 	var team Team
-	coll := client.Database("Database").Collection("Teams")
+	coll := client.Database(databaseName).Collection("Teams")
 
 	if err := ctx.BindJSON(&team); err != nil {
 		ctx.JSON(http.StatusInternalServerError, createResponse("error", err.Error()))
@@ -160,7 +163,7 @@ func deleteTeam(ctx *gin.Context) {
 }
 
 func insert(ctx *gin.Context, collectionName string, docs []interface{}) error {
-	coll := client.Database("Database").Collection(collectionName)
+	coll := client.Database(databaseName).Collection(collectionName)
 	result, err := coll.InsertMany(ctx, docs)
 
 	if err != nil {
@@ -176,6 +179,8 @@ func insert(ctx *gin.Context, collectionName string, docs []interface{}) error {
 }
 
 func main() {
+	godotenv.Load(".env")
+
 	router := gin.Default()
 	router.Use(cors.Default())
 
@@ -201,5 +206,5 @@ func main() {
 
 	fmt.Println("Connected to mongo")
 
-	router.Run("localhost:8080")
+	router.Run("0.0.0.0:" + os.Getenv("PORT"))
 }
